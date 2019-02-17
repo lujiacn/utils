@@ -5,11 +5,13 @@ import (
 	"bytes"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/globalsign/mgo/bson"
 	"github.com/revel/revel"
 )
 
@@ -186,4 +188,14 @@ func FilterUnicodeSymbol(s string) string {
 			return r
 		}
 	}, s)
+}
+
+// parse url query string return to bson.M
+func ParseQueryToBson(reqStr string) bson.M {
+	args, _ := url.ParseQuery(reqStr)
+	out := bson.M{}
+	for k, item := range args {
+		out[k] = fmt.Sprintf("%v", item[0])
+	}
+	return out
 }

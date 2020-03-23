@@ -7,13 +7,17 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/globalsign/mgo/bson"
 	"github.com/revel/revel"
 )
+
+var YesNoOption = []string{"Yes", "No"}
 
 //AsOptions convert [a] to [a,a]
 func AsOptions(list []string) [][]interface{} {
@@ -59,17 +63,47 @@ func SliceToMap(colNames []string, rows [][]string) ([]map[string]string, error)
 	return results, nil
 }
 
+// SliceToMap Interface{} instead of string
+func SliceToMapInterface(colNames []string, rows [][]interface{}) ([]map[string]interface{}, error) {
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	colNum := len(colNames)
+	rowNum := len(rows)
+
+	// create maps
+	results := []map[string]interface{}{}
+	for i := 0; i < rowNum; i++ {
+		if len(rows[i]) != colNum {
+			return nil, errors.New("Error: ColNames length and record length not consistent.")
+		}
+		t_map := map[string]interface{}{}
+		for j := 0; j < colNum; j++ {
+			t_map[colNames[j]] = rows[i][j]
+		}
+		results = append(results, t_map)
+	}
+
+	return results, nil
+}
+
 func ReadUrl(apiUrl, user, pwd string, proxyUrl string) ([]byte, error) {
 	var client = &http.Client{}
+	var tr *http.Transport
 	if proxyUrl != "" {
 		proxy, _ := url.Parse(proxyUrl)
-		tr := &http.Transport{
+		tr = &http.Transport{
 			Proxy:           http.ProxyURL(proxy),
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
-		client = &http.Client{
-			Transport: tr,
+	} else {
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
+	}
+
+	client = &http.Client{
+		Transport: tr,
 	}
 
 	//read body string
@@ -198,4 +232,21 @@ func ParseQueryToBson(reqStr string) bson.M {
 		out[k] = fmt.Sprintf("%v", item[0])
 	}
 	return out
+}
+
+// random seed
+func initRandSeed() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+// rando string charts
+var letterRunes = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+// gen randomstring with size input
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }

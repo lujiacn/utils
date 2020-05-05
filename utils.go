@@ -17,7 +17,7 @@ import (
 	"github.com/revel/revel"
 )
 
-var YesNoOption = []string{"Yes", "No"}
+var YesNoOption = []string{"yes", "no"}
 
 //AsOptions convert [a] to [a,a]
 func AsOptions(list []string) [][]interface{} {

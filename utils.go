@@ -1,20 +1,14 @@
 package utils
 
 import (
-	"bufio"
-	"bytes"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/globalsign/mgo/bson"
-	"github.com/revel/revel"
 )
 
 var YesNoOption = []string{"yes", "no"}
@@ -156,21 +150,6 @@ func SplitByPipe(s string) []string {
 	return out
 }
 
-func RenderTpl(t_path string, viewArgs map[string]interface{}) string {
-	// Get the Template.
-	t, err := revel.MainTemplateLoader.Template(t_path)
-	if err != nil {
-		revel.AppLog.Errorf("Load template err %s", err)
-	}
-
-	var outbuf bytes.Buffer
-	out := bufio.NewWriter(&outbuf)
-	t.Render(out, viewArgs)
-	out.Flush()
-
-	return outbuf.String()
-}
-
 //UniqueInts returns a unique subset of the int slice provided.
 func UniqueInts(input []int) []int {
 	u := make([]int, 0, len(input))
@@ -224,16 +203,6 @@ func FilterUnicodeSymbol(s string) string {
 	}, s)
 }
 
-// parse url query string return to bson.M
-func ParseQueryToBson(reqStr string) bson.M {
-	args, _ := url.ParseQuery(reqStr)
-	out := bson.M{}
-	for k, item := range args {
-		out[k] = fmt.Sprintf("%v", item[0])
-	}
-	return out
-}
-
 // random seed
 func initRandSeed() {
 	rand.Seed(time.Now().UnixNano())
@@ -249,4 +218,19 @@ func RandStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+// UniqueSlice remote duplicate element from slice
+func UniqueSlice(s []string) []string {
+	unique := make(map[string]bool, len(s))
+	us := make([]string, len(unique))
+	for _, elem := range s {
+		if len(elem) != 0 {
+			if !unique[elem] {
+				us = append(us, elem)
+				unique[elem] = true
+			}
+		}
+	}
+	return us
 }

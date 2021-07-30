@@ -224,7 +224,8 @@ func RandStringRunes(n int) string {
 func UniqueSlice(s []string) []string {
 	unique := make(map[string]bool, len(s))
 	us := make([]string, len(unique))
-	for _, elem := range s {
+	for _, item := range s {
+		elem := strings.TrimSpace(item)
 		if len(elem) != 0 {
 			if !unique[elem] {
 				us = append(us, elem)

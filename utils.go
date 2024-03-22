@@ -3,7 +3,7 @@ package utils
 import (
 	"crypto/tls"
 	"errors"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -13,7 +13,7 @@ import (
 
 var YesNoOption = []string{"yes", "no"}
 
-//AsOptions convert [a] to [a,a]
+// AsOptions convert [a] to [a,a]
 func AsOptions(list []string) [][]interface{} {
 	output := [][]interface{}{}
 	for _, item := range list {
@@ -22,15 +22,15 @@ func AsOptions(list []string) [][]interface{} {
 	return output
 }
 
-// Split by ",", ";"
+// Split splits a string by "," and ";" and trims spaces around each item.
 func Split(s string) []string {
 	out := strings.FieldsFunc(s, func(r rune) bool {
-		switch r {
-		case ',', ';':
-			return true
-		}
-		return false
+		return r == ',' || r == ';'
 	})
+	// Iterate through the slice to trim spaces around each item.
+	for i, item := range out {
+		out[i] = strings.TrimSpace(item)
+	}
 	return out
 }
 
@@ -110,7 +110,7 @@ func ReadUrl(apiUrl, user, pwd string, proxyUrl string) ([]byte, error) {
 	}
 
 	// Retrieve the body of the response
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 
 	if err != nil {
@@ -119,7 +119,7 @@ func ReadUrl(apiUrl, user, pwd string, proxyUrl string) ([]byte, error) {
 	return []byte(body), nil
 }
 
-//StrInSlice check if string is in string list
+// StrInSlice check if string is in string list
 func StrInSlice(str string, list []string) bool {
 	for _, item := range list {
 		if str == item {
@@ -150,7 +150,7 @@ func SplitByPipe(s string) []string {
 	return out
 }
 
-//UniqueInts returns a unique subset of the int slice provided.
+// UniqueInts returns a unique subset of the int slice provided.
 func UniqueInts(input []int) []int {
 	u := make([]int, 0, len(input))
 	m := make(map[int]bool)
@@ -165,7 +165,7 @@ func UniqueInts(input []int) []int {
 	return u
 }
 
-//UniqueStrings returns a unique subset of the int slice provided.
+// UniqueStrings returns a unique subset of the int slice provided.
 func UniqueStrings(input []string) []string {
 	u := make([]string, 0, len(input))
 	m := make(map[string]bool)
@@ -180,7 +180,7 @@ func UniqueStrings(input []string) []string {
 	return u
 }
 
-//RemoveBlankStrings
+// RemoveBlankStrings
 func RemoveBlankStrings(input []string) []string {
 	u := make([]string, 0, len(input))
 	for _, val := range input {
